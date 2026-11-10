@@ -23,7 +23,7 @@
 
 [Repositorio](https://github.com/Irinath/IFTS29_PsR_2c2026_VThomas_PFO3)
 
-### Diagrama del sistema (abajo)
+### Diagrama del sistema
   
 ```mermaid
 flowchart TB
