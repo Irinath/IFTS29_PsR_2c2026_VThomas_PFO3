@@ -30,6 +30,8 @@ def ejecutar_tarea(tarea):
     else:
         raise ValueError(f"Tipo de tarea desconocido: {tipo}")
 
+    print(f"{threading.current_thread().name} resolvió {tipo}", flush=True)
+
     return {"resultado": resultado, "worker": threading.current_thread().name}
 
 

@@ -19,7 +19,11 @@
 
 ### *Entregables:*
 
-## Diagrama del sistema
+### Código del servidor y cliente en repositorio de Github
+
+[Repositorio](https://github.com/Irinath/IFTS29_PsR_2c2026_VThomas_PFO3)
+
+### Diagrama del sistema (abajo)
   
 ```mermaid
 flowchart TB
@@ -56,8 +60,6 @@ flowchart TB
     W3 --> OBJ
 ```
 
-- Código del servidor y cliente en repositorio de Github.
-
 #### Componentes
 
 | Componente | Rol |
@@ -73,11 +75,17 @@ flowchart TB
 
 La implementación en Python reproduce el núcleo del diagrama en un solo proceso:
 
-- `servidor.py`: socket TCP que acepta varios clientes (un hilo por conexión), mete cada tarea en una `queue.Queue` y un pool de hilos workers las resuelve y devuelve el resultado al cliente correcto.
-- `cliente.py`: se conecta, envía tareas en JSON y recibe los resultados en un hilo aparte (no bloquea esperando cada respuesta).
+- `servidor.py`: socket TCP que acepta varios clientes (un hilo por conexión). Cada tarea recibida se delega con `pool.submit()` a un `ThreadPoolExecutor` de 6 hilos workers, y el resultado se devuelve al cliente por el mismo socket.
+- `cliente.py`: abre una conexión por tarea, envía la tarea en JSON y espera el resultado. Para probar la concurrencia lanza 16 tareas lentas en paralelo, lo que muestra cómo los 6 workers se reparten el trabajo.
 
-La `queue.Queue` cumple localmente el papel que RabbitMQ cumple en el sistema completo.
+El `ThreadPoolExecutor` y su cola interna cumplen localmente el papel que RabbitMQ cumple en el sistema completo: desacoplan a quien recibe la tarea de quien la ejecuta.
 
+---
+*Decisiones de diseño:*
+
+- Una _tarea por conexión_: es más simple que mantener la conexión abierta, y el paralelismo lo logra el cliente abriendo varias conexiones a la vez.
+- Un _timeout de 30 segundos_: si se vence, el cliente recibe un error, pero el worker sigue ejecutando la tarea hasta terminarla. Es una limitación real que RabbitMQ con confirmaciones (acks) resolvería mejor.
+  
 #### Cómo ejecutarlo
 
 Requiere Python 3.10+, sin dependencias externas.
@@ -93,4 +101,4 @@ Abrí varios clientes a la vez para ver cómo los workers se reparten el trabajo
 
 #### Captura de pantalla con las pruebas Cliente-Servidor
 
-![prueba cliente-servidor](Captura%20de%20pantalla%20Cliente-Servidor.png)
+![prueba cliente-servidor](Captura_Cliente-Servidor.png)
